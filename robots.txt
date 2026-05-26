@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /wp-admin/
+Disallow: /wp-content/
+Disallow: /wp-includes/
+Disallow: /wp-json/
+
+Sitemap: https://meta-box.space/sitemap.xml

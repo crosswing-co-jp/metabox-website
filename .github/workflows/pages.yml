@@ -1,0 +1,74 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rewrite paths for GitHub Pages subdirectory
+        run: |
+          # カスタムドメイン (CNAME) 配信時はベースパス '/' なので rewrite 不要
+          if [ -f CNAME ]; then
+            echo "CNAME detected ($(cat CNAME)) — custom domain serves from '/', skipping path rewrite"
+            exit 0
+          fi
+
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          BASE="/${REPO_NAME}"
+
+          # 相対パス ../css/, ../img/, ../js/ を絶対パスに変換
+          find . -name "*.html" -exec sed -i -E \
+            -e "s|(href\|src)=\"(\.\./)+css/|\1=\"${BASE}/css/|g" \
+            -e "s|(href\|src)=\"(\.\./)+js/|\1=\"${BASE}/js/|g" \
+            -e "s|(href\|src)=\"(\.\./)+img/|\1=\"${BASE}/img/|g" \
+            {} +
+
+          # ルート直接参照 (css/...) にベースパス付与
+          find . -name "*.html" -exec sed -i -E \
+            -e "s|(href\|src)=\"css/|\1=\"${BASE}/css/|g" \
+            -e "s|(href\|src)=\"js/|\1=\"${BASE}/js/|g" \
+            -e "s|(href\|src)=\"img/|\1=\"${BASE}/img/|g" \
+            {} +
+
+          # 絶対パス (/css/, /img/, /js/) にベースパス付与
+          find . -name "*.html" -exec sed -i -E \
+            -e "s|(href\|src)=\"/css/|\1=\"${BASE}/css/|g" \
+            -e "s|(href\|src)=\"/js/|\1=\"${BASE}/js/|g" \
+            -e "s|(href\|src)=\"/img/|\1=\"${BASE}/img/|g" \
+            {} +
+
+          # favicon 系の絶対パス (/favicon.ico, /apple-touch-icon.png, /icon-192.png) にベースパス付与
+          find . -name "*.html" -exec sed -i -E \
+            -e "s|href=\"/favicon\.ico|href=\"${BASE}/favicon.ico|g" \
+            -e "s|href=\"/apple-touch-icon\.png|href=\"${BASE}/apple-touch-icon.png|g" \
+            -e "s|href=\"/icon-192\.png|href=\"${BASE}/icon-192.png|g" \
+            {} +
+
+          # CSS内の相対パス修正
+          find . -name "*.css" -exec sed -i -E \
+            -e "s|url\((\.\./)+img/|url(${BASE}/img/|g" \
+            {} +
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
