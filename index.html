@@ -40,6 +40,10 @@ const ajaxGetCasePostsParams = {"ajaxUrl":"https:\/\/meta-box.space\/wp-admin\/a
 <style id="wip-hidden-sections">
 /* WIP: TOP の事例紹介〜ニュースを非表示 (2026-05-26、コンテンツ作成中) */
 .home-case, .home-column, .home-faq, .home-news { display: none !important; }
+/* 看板状態 (2026-05-28): 特徴/サービスも非表示 */
+.home-feature, .home-service { display: none !important; }
+/* 看板状態: TOP の全リンク無効化 (誘導先未準備のため) */
+a[href] { pointer-events: none !important; cursor: default !important; }
 
 /* HERO スライダー (2026-05-28 動画→VOiCE イベント6枚) */
 /* 元の .home-hero-video は opacity:0 (video.load 待ち) なので強制可視化 */
@@ -470,7 +474,6 @@ const ajaxGetCasePostsParams = {"ajaxUrl":"https:\/\/meta-box.space\/wp-admin\/a
     <div id="js-home-about-text" class="about-intro-text">
       <h2 class="about-intro-heading">ビジネス×ゲーム性による<br />
 新たな顧客体験の創造</h2>
-      <p class="about-intro-body">テキストが入ります。テキストが入ります。テキストが入ります。テキストが入ります。テキストが入ります。テキストが入ります。テキストが入ります。テキストが入ります。テキストが入ります。テキストが入ります。テキストが入ります。テキストが入ります。テキストが入ります。テキストが入ります。テキストが入ります。</p>
     </div>
   </div>
 </section>
