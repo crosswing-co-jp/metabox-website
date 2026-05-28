@@ -40,6 +40,36 @@ const ajaxGetCasePostsParams = {"ajaxUrl":"https:\/\/meta-box.space\/wp-admin\/a
 <style id="wip-hidden-sections">
 /* WIP: TOP の事例紹介〜ニュースを非表示 (2026-05-26、コンテンツ作成中) */
 .home-case, .home-column, .home-faq, .home-news { display: none !important; }
+
+/* HERO スライダー (2026-05-28 動画→VOiCE イベント6枚) */
+/* 元の .home-hero-video は opacity:0 (video.load 待ち) なので強制可視化 */
+.home-hero-slider {
+  position: relative; overflow: hidden;
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+.home-hero-slider__slide {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  opacity: 0; transition: opacity 1s ease-in-out;
+  z-index: 0; /* 元 video__media と同じ層、:before(z-index:1) の半透明オーバーレイは上に残る */
+}
+.home-hero-slider__slide.is-active { opacity: 1; }
+.home-hero-slider__dots {
+  position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 10px; z-index: 5;
+  background: rgba(0,0,0,0.25); padding: 6px 10px; border-radius: 999px;
+}
+.home-hero-slider__dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: rgba(255,255,255,0.55); border: none; cursor: pointer; padding: 0;
+  transition: background 0.3s, transform 0.3s;
+}
+.home-hero-slider__dot:hover { background: rgba(255,255,255,0.85); }
+.home-hero-slider__dot.is-active { background: #fff; transform: scale(1.2); }
+@media (prefers-reduced-motion: reduce) {
+  .home-hero-slider__slide { transition: none; }
+}
 </style>
 </head>
 
@@ -344,8 +374,21 @@ const ajaxGetCasePostsParams = {"ajaxUrl":"https:\/\/meta-box.space\/wp-admin\/a
 
     <div class="home-hero-inner">
 
-      <div class="home-hero-video">
-        <video src="wp-content/themes/metabox/assets/video/home_main.mp4" muted loop playsinline preload="auto" id="js-hero-video" class="home-hero-video__media" data-poster="https://meta-box.space/wp-content/themes/metabox/assets/images/home_main_poster.png"></video>
+      <div class="home-hero-video home-hero-slider" id="js-hero-slider" aria-roledescription="carousel" aria-label="メタぼっくす活用事例">
+        <div class="home-hero-slider__slide is-active" style="background-image: url('wp-content/uploads/voiceengi/voice-event-vrevent-10.jpeg');" role="group" aria-roledescription="slide" aria-label="第10回 YOUR VOiket"></div>
+        <div class="home-hero-slider__slide" style="background-image: url('wp-content/uploads/voiceengi/voice-event-vrevent-9.jpeg');" role="group" aria-roledescription="slide" aria-label="第9回 YOUR VOiket"></div>
+        <div class="home-hero-slider__slide" style="background-image: url('wp-content/uploads/voiceengi/voice-event-shrine.jpeg');" role="group" aria-roledescription="slide" aria-label="初詣 in VOiCE神社"></div>
+        <div class="home-hero-slider__slide" style="background-image: url('wp-content/uploads/voiceengi/voice-event-vrevent-8.jpeg');" role="group" aria-roledescription="slide" aria-label="第8回 YOUR VOiket"></div>
+        <div class="home-hero-slider__slide" style="background-image: url('wp-content/uploads/voiceengi/voice-event-vrevent-7.jpeg');" role="group" aria-roledescription="slide" aria-label="第7回 YOUR VOiket"></div>
+        <div class="home-hero-slider__slide" style="background-image: url('wp-content/uploads/voiceengi/voice-event-vrevent-6.jpeg');" role="group" aria-roledescription="slide" aria-label="第6回 YOUR VOiket"></div>
+        <div class="home-hero-slider__dots" role="tablist" aria-label="スライド選択">
+          <button type="button" class="home-hero-slider__dot is-active" data-index="0" aria-label="スライド 1"></button>
+          <button type="button" class="home-hero-slider__dot" data-index="1" aria-label="スライド 2"></button>
+          <button type="button" class="home-hero-slider__dot" data-index="2" aria-label="スライド 3"></button>
+          <button type="button" class="home-hero-slider__dot" data-index="3" aria-label="スライド 4"></button>
+          <button type="button" class="home-hero-slider__dot" data-index="4" aria-label="スライド 5"></button>
+          <button type="button" class="home-hero-slider__dot" data-index="5" aria-label="スライド 6"></button>
+        </div>
       </div>
 
       <div class="home-hero-contents">
@@ -1135,6 +1178,39 @@ const ajaxGetCasePostsParams = {"ajaxUrl":"https:\/\/meta-box.space\/wp-admin\/a
 </div>
 <!-- /wrapper -->
 
+<script>
+/* HERO スライダー初期化 (2026-05-28、依存なし軽量自前) */
+(function(){
+  var slider = document.getElementById('js-hero-slider');
+  if (!slider) return;
+  /* 旧 video.play イベントで付与されていた .is-video-play を即座に付与
+     (HERO の title/description/CTA/video の opacity:0 → 1 トリガー) */
+  document.body.classList.add('is-video-play');
+  var slides = slider.querySelectorAll('.home-hero-slider__slide');
+  var dots = slider.querySelectorAll('.home-hero-slider__dot');
+  if (!slides.length) return;
+  var current = 0;
+  var timer = null;
+  var INTERVAL_MS = 4500;
+  function go(i) {
+    slides[current].classList.remove('is-active');
+    dots[current].classList.remove('is-active');
+    current = (i + slides.length) % slides.length;
+    slides[current].classList.add('is-active');
+    dots[current].classList.add('is-active');
+  }
+  function next() { go(current + 1); }
+  function start() { stop(); timer = window.setInterval(next, INTERVAL_MS); }
+  function stop() { if (timer) { window.clearInterval(timer); timer = null; } }
+  dots.forEach(function(dot, i) {
+    dot.addEventListener('click', function(){ stop(); go(i); start(); });
+  });
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden) stop(); else start();
+  });
+  start();
+})();
+</script>
 
 </body>
 </html>
