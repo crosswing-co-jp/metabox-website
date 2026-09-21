@@ -1,7 +1,8 @@
-# metabox.s-oyama.me 静的サイト
+# meta-box.space 静的サイト
 
-メタぼっくす (https://metabox.s-oyama.me/) の静的版です。
-WordPress 6.3.1 ベースのオリジナルサイトを wget でミラーした静的アーカイブ。
+メタぼっくす (https://meta-box.space/) の静的版です。
+WordPress 6.3.1 ベースのオリジナルサイト (`metabox.s-oyama.me`) を wget でミラーした静的アーカイブ。
+現行の公開先は `meta-box.space` (GitHub Pages / CNAME)。
 
 ## 取得元と認証
 
@@ -43,4 +44,4 @@ wget --mirror --page-requisites --convert-links --adjust-extension \
 
 ## 関連
 
-- 親フォルダ運用: `HOPE21/` 配下、4静的サイト移行プロジェクトの一部（hope21.co.jp / cross-wing.co.jp / west-wing.net / metabox.s-oyama.me）
+- 親フォルダ運用: `HOPE21/` 配下、4静的サイト移行プロジェクトの一部（hope21.co.jp / cross-wing.co.jp / west-wing.net / meta-box.space）
